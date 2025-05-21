@@ -10,7 +10,7 @@ import ssl
 import sys
 import re
 import time
-
+# 2925.com去注册邮箱
 def extract_email_and_code(content):
     """从邮件内容中提取邮箱地址和验证码"""
     email_pattern = r'([a-zA-Z0-9]+@2925\.com)'
