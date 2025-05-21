@@ -2,13 +2,14 @@ import os
 from colorama import Fore, Style, init
 import time
 import random
+import string
 from faker import Faker
 from cursor_auth import CursorAuth
 from reset_machine_manual import MachineIDResetter
 from get_user_token import get_token_from_cookie
 from config import get_config
 from account_manager import AccountManager
-
+import email_reader
 os.environ["PYTHONVERBOSE"] = "0"
 os.environ["PYINSTALLER_VERBOSE"] = "0"
 
@@ -49,7 +50,7 @@ class CursorRegistration:
         self.faker = Faker()
         
         # generate account information
-        self.password = self._generate_password()
+        self.password = 'qq86775882'
         self.first_name = self.faker.first_name()
         self.last_name = self.faker.last_name()
         
@@ -64,7 +65,13 @@ class CursorRegistration:
     def _generate_password(self, length=12):
         """Generate password"""
         return self.faker.password(length=length, special_chars=True, digits=True, upper_case=True, lower_case=True)
-
+    def generate_email(self):
+        prefix = "a86775882"
+        random_part = ''.join(random.choices(
+            string.ascii_letters + string.digits,  # 包含大小写字母+数字
+            k=6
+        ))
+        return f"{prefix}{random_part}@2925.com"
     def setup_email(self):
         """Setup Email"""
         try:
@@ -74,7 +81,8 @@ class CursorRegistration:
             
             if suggested_email:
                 print(f"{Fore.CYAN}{EMOJI['START']} {self.translator.get('register.suggest_email', suggested_email=suggested_email) if self.translator else f'Suggested email: {suggested_email}'}")
-                print(f"{Fore.CYAN}{EMOJI['START']} {self.translator.get('register.use_suggested_email_or_enter') if self.translator else 'Type "yes" to use this email or enter your own email:'}")
+                msg = 'Type "yes" to use this email or enter your own email:'
+                print(f"{Fore.CYAN}{EMOJI['START']} {self.translator.get('register.use_suggested_email_or_enter') if self.translator else msg}")
                 user_input = input().strip()
                 
                 if user_input.lower() == 'yes' or user_input.lower() == 'y':
@@ -85,7 +93,10 @@ class CursorRegistration:
             else:
                 # If there's no suggested email
                 print(f"{Fore.CYAN}{EMOJI['START']} {self.translator.get('register.manual_email_input') if self.translator else 'Please enter your email address:'}")
-                self.email_address = input().strip()
+                # 创建一个随机邮箱，a86775882+6为英数+@2925.com
+                self.email_address = self.generate_email()
+                print(self.email_address)
+                # self.email_address = input().strip()
             
             # Validate if the email is valid
             if '@' not in self.email_address:
@@ -100,19 +111,37 @@ class CursorRegistration:
             return False
 
     def get_verification_code(self):
-        """Manually Get Verification Code"""
+        """获取邮箱验证码或从用户手动输入"""
         try:
-            print(f"{Fore.CYAN}{EMOJI['CODE']} {self.translator.get('register.manual_code_input') if self.translator else 'Please enter the verification code:'}")
-            code = input().strip()
+            print(f"{Fore.CYAN}{EMOJI['CODE']} {self.translator.get('register.waiting_for_code') if self.translator else '正在监控邮箱获取验证码...'}{Style.RESET_ALL}")
             
-            if not code.isdigit() or len(code) != 6:
-                print(f"{Fore.RED}{EMOJI['ERROR']} {self.translator.get('register.invalid_code') if self.translator else 'Invalid verification code'}{Style.RESET_ALL}")
+            # 从邮件中获取验证码，这个过程会持续监控直到获取到验证码或超时
+            email_address, code = email_reader.fetch_emails(target_email=self.email_address, timeout_minutes=5)
+            
+            # 如果成功获取验证码
+            if code and code.isdigit() and len(code) == 6:
+                print(f"{Fore.GREEN}{EMOJI['SUCCESS']} {self.translator.get('register.code_received') if self.translator else f'成功获取验证码: {code}'}{Style.RESET_ALL}")
+                return code
+                
+            # 如果自动获取失败，提示手动输入
+            print(f"{Fore.YELLOW}{EMOJI['INFO']} {self.translator.get('register.manual_code_input') if self.translator else '未能自动获取验证码，请手动输入验证码:'}{Style.RESET_ALL}")
+            manual_code = input().strip()
+            
+            if not manual_code.isdigit() or len(manual_code) != 6:
+                print(f"{Fore.RED}{EMOJI['ERROR']} {self.translator.get('register.invalid_code') if self.translator else '验证码格式不正确（需要6位数字）'}{Style.RESET_ALL}")
                 return None
                 
-            return code
+            return manual_code
             
         except Exception as e:
-            print(f"{Fore.RED}{EMOJI['ERROR']} {self.translator.get('register.code_input_failed', error=str(e))}{Style.RESET_ALL}")
+            print(f"{Fore.RED}{EMOJI['ERROR']} {self.translator.get('register.code_error') if self.translator else f'获取验证码过程中出错: {str(e)}'}{Style.RESET_ALL}")
+            print(f"{Fore.YELLOW}{EMOJI['INFO']} {self.translator.get('register.manual_code_input') if self.translator else '请手动输入验证码:'}{Style.RESET_ALL}")
+            try:
+                manual_code = input().strip()
+                if manual_code.isdigit() and len(manual_code) == 6:
+                    return manual_code
+            except:
+                pass
             return None
 
     def register_cursor(self):
@@ -139,7 +168,7 @@ class CursorRegistration:
             # Execute new registration process, passing translator
             result, browser_tab = new_signup_main(
                 email=self.email_address,
-                password=self.password,
+                password='qq86775882',
                 first_name=self.first_name,
                 last_name=self.last_name,
                 email_tab=email_tab,  # Pass email_tab if tempmail_plus is enabled
