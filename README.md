@@ -93,7 +93,7 @@ irm https://raw.githubusercontent.com/yeongpin/cursor-free-vip/main/scripts/inst
 ```
 
 </details>
-
+需要再email_reader.py文件中去替换自己的2925邮箱
 If you want to stop the script, please press Ctrl+C<br>要停止腳本，請按 Ctrl+C
 
 ## ❗ Note | 注意事項
