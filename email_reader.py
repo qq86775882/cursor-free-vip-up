@@ -76,8 +76,8 @@ def fetch_emails(target_email=None, timeout_minutes=10):
     target_sender = "Cursor"
     target_subject = "Verify your email address"
     
-    username = 'a86775882'
-    password = 'qq86775882'
+    username = ''#替换为你的2925邮箱
+    password = ''#替换为你的2925邮箱密码
     
     print(f"正在监控邮箱 {username}@{pop3_server} 以获取验证码")
     print(f"目标邮箱: {target_email}")
